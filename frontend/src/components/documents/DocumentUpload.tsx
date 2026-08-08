@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useDocuments } from '../../hooks/useDocuments';
-import { Document } from '../../types';
+import type { Document } from '../../types';
 import { formatFileSize } from '../../utils/formatters';
 
 interface DocumentUploadProps {

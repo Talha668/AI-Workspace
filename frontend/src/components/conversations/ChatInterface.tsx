@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWebSocket } from '../../hooks/useWebSocket';
-import { Message } from '../../types';
+import type { Message } from '../../types';
 
 interface ChatInterfaceProps {
   conversationId: number;

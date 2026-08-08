@@ -5,6 +5,7 @@ import { useDocuments } from '../hooks/useDocuments';
 import DocumentUpload from '../components/documents/DocumentUpload';
 import DocumentList from '../components/documents/DocumentList';
 
+
 const WorkspaceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const workspaceId = parseInt(id || '0');

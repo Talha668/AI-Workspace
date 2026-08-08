@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document } from '../../types';
+import type { Document } from '../../types';
 import { formatFileSize, formatDate } from '../../utils/formatters';
 
 interface DocumentListProps {
