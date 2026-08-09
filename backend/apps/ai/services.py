@@ -1,24 +1,21 @@
-import google.generativeai as genai
+import google as genai
 from django.conf import settings
 from typing import List, Dict
 import numpy as np
-from pgvector.django import L2Distance
 
 
 class GeminiService:
     def __init__(self):
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel(settings.GEMINI_MODEL)
-        self.embedding_model = 'models/embedding-001'
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        self.model = settings.GEMINI_MODEL
 
     def create_embedding(self, text: str) -> List[float]:
         """Generate embeddings for text"""
-        result = genai.embed_content(
-            model=self.embedding_model,
-            content=text,
-            task_type="retrieval_document"
+        result = self.client.model.embed_content(
+            model='text_embedding_004',
+            contents=text
         )
-        return result['embedding']
+        return result.embeddings[0].values
 
     def generate_response(self, query: str, context: List[str]) -> str:
         """Generate AI response with context"""
@@ -34,7 +31,10 @@ class GeminiService:
 
         Answer:"""
         
-        response = self.model.generate_content(prompt)
+        response = self.client.model.generate_content(
+            model=self.model,
+            content=prompt
+        )
         return response.text
 
     def generate_response_stream(self, query: str, context: List[str]):
@@ -111,21 +111,32 @@ class RAGService:
         from .models import DocumentEmbedding
         
         # Create query embedding
-        query_embedding = self.gemini.create_embedding(query)
+        query_embedding = np.array(self.gemini.create_embedding(query))
         
-        # Search similar chunks using pgvector
-        similar_chunks = DocumentEmbedding.objects.filter(
+        # Get all chunks for workspace
+        chunks = DocumentEmbedding.objects.filter(
             document__workspace_id=workspace_id
-        ).annotate(
-            distance=L2Distance('embedding', query_embedding)
-        ).order_by('distance')[:top_k]
+        )
+        
+        # Calculate cosine similarity in Python
+        similarities = []
+        for chunk in chunks:
+            chunk_embedding = np.array(chunk.embedding)
+            # Cosine similarity
+            similarity = np.dot(query_embedding, chunk_embedding) / (
+                np.linalg.norm(query_embedding) * np.linalg.norm(chunk_embedding)
+            )
+            similarities.append((chunk, similarity))
+        
+        # Sort by similarity (highest first) and get top_k
+        similarities.sort(key=lambda x: x[1], reverse=True)
         
         results = []
-        for chunk in similar_chunks:
+        for chunk, score in similarities[:top_k]:
             results.append({
                 'text': chunk.chunk_text,
                 'document_title': chunk.document.title,
-                'similarity_score': float(chunk.distance)
+                'similarity_score': float(score)
             })
         
         return results
@@ -173,9 +184,9 @@ class RAGService:
                 'text': chunk.text,
                 'sources': [
                     {
-                        'document_title': chunk['document_title'],
-                        'excerpt': chunk['text'][:200] + '...'
+                        'document_title': c['document_title'],
+                        'excerpt': c['text'][:200] + '...'
                     }
-                    for chunk in relevant_chunks
+                    for c in relevant_chunks
                 ]
             }
