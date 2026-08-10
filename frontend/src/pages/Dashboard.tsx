@@ -1,18 +1,49 @@
+// pages/Dashboard.tsx
 import React from 'react';
-import { useWorkspaces } from '../hooks/useWorkspaces';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
-  const { workspaces, isLoading, createWorkspace } = useWorkspaces();
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [name, setName] = React.useState('');
   const [description, setDescription] = React.useState('');
+  const [workspaces, setWorkspaces] = React.useState([
+    {
+      id: 1,
+      name: 'AI Research',
+      description: 'Research papers and AI documentation',
+      documents_count: 12,
+      created_at: '2024-01-15'
+    },
+    {
+      id: 2,
+      name: 'Project Alpha',
+      description: 'Product requirements and specs',
+      documents_count: 8,
+      created_at: '2024-01-20'
+    },
+    {
+      id: 3,
+      name: 'Personal Notes',
+      description: 'Meeting notes and ideas',
+      documents_count: 5,
+      created_at: '2024-01-25'
+    }
+  ]);
 
+  // Mock create workspace function (just adds to local state)
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createWorkspace.mutateAsync({ name, description });
+      const newWorkspace = {
+        id: workspaces.length + 1,
+        name: name,
+        description: description || 'New workspace',
+        documents_count: 0,
+        created_at: new Date().toISOString().split('T')[0]
+      };
+      
+      setWorkspaces([...workspaces, newWorkspace]);
       setShowCreateModal(false);
       setName('');
       setDescription('');
@@ -21,15 +52,14 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-        <button onClick={() => setShowCreateModal(true)} className="btn-primary">
+        <button
+          onClick={() => setShowCreateModal(true)} 
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+        >
           New Workspace
         </button>
       </div>
@@ -55,7 +85,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-lg font-medium mb-4">Create New Workspace</h2>
             <form onSubmit={handleCreate}>

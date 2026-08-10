@@ -4,7 +4,6 @@ import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/Dashboard';
 import WorkspaceDetail from './pages/WorkspaceDetail';
 
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -21,6 +20,7 @@ function App() {
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="workspaces/:id" element={<WorkspaceDetail />} />
           </Route>
         </Routes>

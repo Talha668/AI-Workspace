@@ -3,6 +3,7 @@ import docx
 import io
 import magic
 from django.core.files.uploadedfile import UploadedFile
+from .models import Document
 
 
 class DocumentProcessor:

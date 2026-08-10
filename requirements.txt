@@ -1,14 +1,3 @@
-cached djangorestframework_simplejwt-5.5.1-py3-none-any.whl (107 kB)
-Using cached django_cors_headers-4.9.0-py3-none-any.whl (12 kB)
-Using cached python_decouple-3.8-py3-none-any.whl (9.9 kB)
-Using cached psycopg2_binary-2.9.12-cp313-cp313-win_amd64.whl (2.8 MB)
-Using cached pillow-12.3.0-cp313-cp313-win_amd64.whl (7.2 MB)
-Downloading python_magic-0.4.27-py2.py3-none-any.whl (13 kB)
-Downloading pypdf2-3.0.1-py3-none-any.whl (232 kB)
-Downloading python_docx-1.2.0-py3-none-any.whl (252 kB)
-Using cached drf_yasg-1.21.15-py3-none-any.whl (4.9 MB)
-Using cached inflection-0.5.1-py2.py3-none-any.whl (9.5 kB)
-
 django-cors-headers-4.9.0 
 djangorestframework-simplejwt-5.5.1 
 drf-yasg-1.21.15 
@@ -27,27 +16,9 @@ uritemplate-4.2.0
 
 pip install django djangorestframework djangorestframework-simplejwt django-cors-headers python-decouple psycopg2-binary Pillow PyPDF2 python-docx 
 drf-yasg python-magic-bin
-Requirement already satisfied: django in c:\users\talha\ai-workspace\.venv\lib\site-packages (6.1)
-Requirement already satisfied: djangorestframework in c:\users\talha\ai-workspace\.venv\lib\site-packages (3.18.0)
-Requirement already satisfied: djangorestframework-simplejwt in c:\users\talha\ai-workspace\.venv\lib\site-packages (5.5.1)
-Requirement already satisfied: django-cors-headers in c:\users\talha\ai-workspace\.venv\lib\site-packages (4.9.0)
-Requirement already satisfied: python-decouple in c:\users\talha\ai-workspace\.venv\lib\site-packages (3.8)
-Requirement already satisfied: psycopg2-binary in c:\users\talha\ai-workspace\.venv\lib\site-packages (2.9.12)
-Requirement already satisfied: Pillow in c:\users\talha\ai-workspace\.venv\lib\site-packages (12.3.0)
-Requirement already satisfied: PyPDF2 in c:\users\talha\ai-workspace\.venv\lib\site-packages (3.0.1)
-Requirement already satisfied: python-docx in c:\users\talha\ai-workspace\.venv\lib\site-packages (1.2.0)
-Requirement already satisfied: drf-yasg in c:\users\talha\ai-workspace\.venv\lib\site-packages (1.21.15)
-Requirement already satisfied: python-magic-bin in c:\users\talha\ai-workspace\.venv\lib\site-packages (0.4.14)
-Requirement already satisfied: asgiref>=3.9.1 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from django) (3.12.1)
-Requirement already satisfied: sqlparse>=0.5.0 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from django) (0.5.5)
-Requirement already satisfied: tzdata in c:\users\talha\ai-workspace\.venv\lib\site-packages (from django) (2026.3)
-Requirement already satisfied: pyjwt>=1.7.1 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from djangorestframework-simplejwt) (2.13.0)
-Requirement already satisfied: lxml>=3.1.0 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from python-docx) (6.1.1)
-Requirement already satisfied: typing_extensions>=4.9.0 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from python-docx) (4.16.0)
-Requirement already satisfied: inflection>=0.3.1 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from drf-yasg) (0.5.1)
-Requirement already satisfied: packaging>=21.0 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from drf-yasg) (26.3)
-Requirement already satisfied: pytz>=2021.1 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from drf-yasg) (2026.3.post1)
-Requirement already satisfied: pyyaml>=5.1 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from drf-yasg) (6.0.3)
-Requirement already satisfied: uritemplate>=3.0.0 in c:\users\talha\ai-workspace\.venv\lib\site-packages (from drf-yasg) (4.2.0)
 
-google-generativeai pgvector django langchain langchain-google-genai numpy
+pgvector 
+django 
+langchain
+langchain-google-genai
+numpy

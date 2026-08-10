@@ -12,7 +12,13 @@ from .services import DocumentService
 
 class WorkspaceViewSet(viewsets.ModelViewSet):
     serializer_class = WorkspaceSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
+
+    # REMOVE THIS WHEN BUILDING LOGIN AND AUTHENTICATION
+    def get(self, request):
+        workspaces = Workspace.objects.all()
+        serilaizer = WorkspaceSerializer(workspaces, many=True)
+        return Response(serilaizer.data)
 
     def get_queryset(self):
         return Workspace.objects.filter(owner=self.request.user)
@@ -57,6 +63,7 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
         documents = workspace.documents.all()
         serializer = DocumentSerializer(documents, many=True, context={'request': request})
         return Response(serializer.data)
+    
 
 class DocumentViewSet(viewsets.ModelViewSet):
     serializer_class = DocumentSerializer

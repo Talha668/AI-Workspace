@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+//import { useAuth } from '../../hooks/useAuth';
 import {
   HomeIcon,
   FolderIcon,
@@ -12,7 +12,10 @@ import {
 
 const MainLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { logout } = useAuth();
+  const logout = () => console.log("Auth is disabled for now")
+  //const { logout } = useAuth();
+  
+  // Added this dummy so the buttons don't break
   const navigate = useNavigate();
 
   const navigation = [
@@ -50,17 +53,16 @@ const MainLayout: React.FC = () => {
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         <div className="lg:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
           <button
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             onClick={() => setSidebarOpen(true)}
           >
             <Bars3Icon className="h-6 w-6" />
           </button>
         </div>
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+        {/* Add bg-gray-50 here */}
+        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
           <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              <Outlet />
-            </div>
+            <Outlet />
           </div>
         </main>
       </div>
@@ -79,7 +81,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ navigation, onLogout, o
     <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">
       <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
         <div className="flex items-center flex-shrink-0 px-4">
-          <h1 className="text-xl font-bold text-primary-600">AI Workspace</h1>
+          <h1 className="text-xl font-bold text-blue-600">AI Workspace</h1>
         </div>
         <nav className="mt-5 flex-1 px-2 space-y-1">
           {navigation.map((item) => (

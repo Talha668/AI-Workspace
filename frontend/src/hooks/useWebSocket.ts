@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Message } from '../types';
 
+
 export const useWebSocket = (conversationId: number | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState(false);
