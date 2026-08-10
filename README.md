@@ -45,7 +45,6 @@ cd ai-workspace
 
 
 ### Backend setup
-
 cd backend
 
 # Create virtual environment
@@ -78,7 +77,6 @@ python manage.py runserver
 
 
 ### Frontend Setup
-
 cd frontend
 
 # Install dependencies
@@ -92,25 +90,21 @@ npm run dev
 
 
 ### Redis Setup (for Celery & WebSockets)
-
 Windows: Download from https://github.com/microsoftarchive/redis/releases
 Mac: brew install redis
 Linux: sudo apt-get install redis-server
 
 
 # Start Redis
-
 redis-server
 
 
 ### Celery Worker
-
 cd backend
 celery -A config worker -l info
 
 
 ### WebSocket Server (Optional)
-
 cd backend
 daphne -p 8000 config.asgi:application
 

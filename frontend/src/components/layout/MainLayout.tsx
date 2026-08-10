@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-//import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import {
   HomeIcon,
   FolderIcon,
@@ -12,8 +12,8 @@ import {
 
 const MainLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const logout = () => console.log("Auth is disabled for now")
-  //const { logout } = useAuth();
+  //const logout = () => console.log("Auth is disabled for now")
+  const { logout } = useAuth();
   
   // Added this dummy so the buttons don't break
   const navigate = useNavigate();
