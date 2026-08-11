@@ -1,57 +1,36 @@
 import React, { useState } from 'react';
 
-interface ChatMessage {
-  role: 'user' | 'ai';
-  text: string;
-}
-
-interface ChatBarProps {
-  workspaceId: number;
-}
-
-const ChatBar: React.FC<ChatBarProps> = ({ workspaceId }) => {
+export default function ChatBar({ workspaceId }: { workspaceId: number }) {
   const [query, setQuery] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<Array<{role: string, text: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
-    const userMessage = { role: 'user' as const, text: query };
-    setMessages([...messages, userMessage]);
+    const userText = query;
+    setMessages([...messages, { role: 'user', text: userText }]);
     setQuery('');
     setIsLoading(true);
 
-    // TODO: Connect to your Daphne WebSocket for Gemini
     setTimeout(() => {
-      const aiMessage = { role: 'ai' as const, text: `Gemini response for: "${userMessage.text}"` };
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev => [...prev, { role: 'ai', text: "Gemini response for: " + userText }]);
       setIsLoading(false);
     }, 1500);
-  };
-
-  const renderMessages = () => {
-    return messages.map((msg, i) => {
-      const isUser = msg.role === 'user';
-      const bgClass = isUser ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-800';
-      const alignClass = isUser ? 'justify-end' : 'justify-start';
-      
-      return (
-        <div key={i} className={`flex ${alignClass}`}>
-          <div className={`max-w-[70%] px-4 py-2 rounded-lg text-sm ${bgClass}`}>
-            {msg.text}
-          </div>
-        </div>
-      );
-    });
   };
 
   return (
     <div className="bg-white border-t border-gray-200">
       {messages.length > 0 && (
         <div className="max-h-48 overflow-y-auto p-4 space-y-3 bg-gray-50">
-          {renderMessages()}
+          {messages.map((msg, i) => (
+            <div key={i} className={msg.role === 'user' ? "flex justify-end" : "flex justify-start"}>
+              <div className={msg.role === 'user' ? "max-w-[70%] px-4 py-2 rounded-lg text-sm bg-blue-600 text-white" : "max-w-[70%] px-4 py-2 rounded-lg text-sm bg-white border border-gray-200 text-gray-800"}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm text-gray-500 animate-pulse">
@@ -83,6 +62,4 @@ const ChatBar: React.FC<ChatBarProps> = ({ workspaceId }) => {
       </form>
     </div>
   );
-};
-
-export default ChatBar;
+}
