@@ -16,9 +16,10 @@ uritemplate-4.2.0
 
 pip install django djangorestframework djangorestframework-simplejwt django-cors-headers python-decouple psycopg2-binary Pillow PyPDF2 python-docx 
 drf-yasg python-magic-bin
-
-pgvector 
+ 
 django 
 langchain
 langchain-google-genai
 numpy
+react-dropzone
+tailwindcss-postcss

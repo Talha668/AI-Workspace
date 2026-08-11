@@ -7,6 +7,7 @@ from .services import RAGService, DocumentProcessor
 from .serializers import QuerySerializer
 from apps.workspaces.models import Document
 
+
 class AIViewSet(viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
     

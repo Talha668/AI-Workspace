@@ -39,7 +39,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete }) => {
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">{getFileIcon(doc.file_type)}</span>
                   <div>
-                    <p className="text-sm font-medium text-primary-600 truncate">{doc.title}</p>
+                    <p className="text-sm font-medium text-blue-600 truncate hover:underline cursor-pointer">{doc.title}</p>
                     <p className="text-sm text-gray-500">
                       {formatFileSize(doc.file_size)} • Uploaded {formatDate(doc.created_at)}
                     </p>

@@ -41,7 +41,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ workspaceId, onUploadCo
     <div
       {...getRootProps()}
       className={`mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg 
-        ${isDragActive ? 'border-primary-400 bg-primary-50' : 'border-gray-300 hover:border-gray-400'}
+        ${isDragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
         ${uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <div className="space-y-1 text-center">
