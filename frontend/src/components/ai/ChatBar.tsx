@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+
 export default function ChatBar({ workspaceId }: { workspaceId: number }) {
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<Array<{role: string, text: string}>>([]);
