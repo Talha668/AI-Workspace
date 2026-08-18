@@ -6,6 +6,8 @@ from .serializers import (
     ConversationSerializer, ConversationCreateSerializer,
     MessageSerializer, MessageCreateSerializer
 )
+from apps.ai.services import RAGService
+
 
 class ConversationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -29,26 +31,48 @@ class ConversationViewSet(viewsets.ModelViewSet):
         serializer = MessageCreateSerializer(data=request.data)
         
         if serializer.is_valid():
+            # Save user message
             message = serializer.save(
                 conversation=conversation,
                 message_type='user'
             )
             
-            # TODO: In Phase 3, we'll add AI response here
-            # For now, we'll create a placeholder response
-            ai_message = Message.objects.create(
-                conversation=conversation,
-                content="AI response will be implemented in Phase 3",
-                message_type='assistant',
-                metadata={'status': 'placeholder'}
-            )
-            
-            return Response({
-                'user_message': MessageSerializer(message).data,
-                'ai_message': MessageSerializer(ai_message).data
-            }, status=status.HTTP_201_CREATED)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Get AI reponse using RAG
+            try:
+                rag_service = RAGService()
+                ai_result = rag_service.query_documents(
+                    query=message.content,
+                    workspace_id=conversation.workspace_id
+                )
+
+                ai_message = Message.objects.create(
+                    conversation=conversation,
+                    content=ai_result['answer'],
+                    message_type='assistant',
+                    metadata={'sources': ai_result['sources']}
+                )
+
+                return Response({
+                    'user_message': MessageSerializer(message).data,
+                    'ai_message': MessageSerializer(ai_message).data
+                }, status=status.HTTP_201_CREATED)
+
+            except Exception as e:
+                # If ai fails still return user message with error
+                ai_message = Message.objects.create(
+                    conversation=conversation,
+                    content=f"Sorry, I encountered an error: {str(e)}",
+                    message_type='assistant',
+                    metadata={'error': str(e)}
+                )
+
+                return Response({
+                    'user_message': MessageSerializer(message).data,
+                    'ai_message': MessageSerializer(ai_message).data
+                }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+
 
 class MessageViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = MessageSerializer

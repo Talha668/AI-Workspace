@@ -12,7 +12,7 @@ class GeminiService:
     def create_embedding(self, text: str) -> List[float]:
         """Generate embeddings for text"""
         result = self.client.model.embed_content(
-            model='text_embedding_004',
+            model='text-embedding-004',
             contents=text
         )
         return result.embeddings[0].values
@@ -33,7 +33,7 @@ class GeminiService:
         
         response = self.client.model.generate_content(
             model=self.model,
-            content=prompt
+            contents=prompt
         )
         return response.text
 
