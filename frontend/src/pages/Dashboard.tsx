@@ -53,7 +53,8 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
+    /* Changed px-6 to px-12 here to add more space from the left line bar */
+    <div className="max-w-5xl mx-auto px-12 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
         <button

@@ -1,24 +1,23 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from .models import Workspace, Document
 from .serializers import (
     WorkspaceSerializer, WorkspaceCreateSerializer,
-    DocumentSerializer, DocumentUploadSerializer
+    DocumentSerializer
 )
 from .services import DocumentService
 
 
 class WorkspaceViewSet(viewsets.ModelViewSet):
     serializer_class = WorkspaceSerializer
-    #permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     # REMOVE THIS WHEN BUILDING LOGIN AND AUTHENTICATION
-    def get(self, request):
-        workspaces = Workspace.objects.all()
-        serilaizer = WorkspaceSerializer(workspaces, many=True)
-        return Response(serilaizer.data)
+    # def get(self, request):
+    #     workspaces = Workspace.objects.all()
+    #     serilaizer = WorkspaceSerializer(workspaces, many=True)
+    #     return Response(serilaizer.data)
 
     def get_queryset(self):
         return Workspace.objects.filter(owner=self.request.user)

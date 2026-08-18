@@ -132,7 +132,7 @@ GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 GEMINI_MODEL = 'gemini-1.5-flash'
 
 # Vector Database Dettings
-VECTOR_DIMENSIONS = 768  # gemini envedding dimensions
+VECTOR_DIMENSIONS = 768  # gemini enbedding dimensions
 
 # Celery Settings
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
