@@ -48,8 +48,8 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-// import { useWorkspace } from '../hooks/useWorkspaces'; // Uncomment when backend is connected
-// import { useDocuments } from '../hooks/useDocuments';
+import { useWorkspace } from '../hooks/useWorkspaces';
+import { useDocuments } from '../hooks/useDocuments';
 import DocumentUpload from '../components/documents/DocumentUpload';
 import DocumentList from '../components/documents/DocumentList';
 import ChatBar from '../components/ai/ChatBar';
