@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
-          setWorkspaces(data); 
+          setWorkspaces(data.results || data); 
         } else if (response.status === 401) {
           // Token expired, force logout
           localStorage.removeItem('access_token');
