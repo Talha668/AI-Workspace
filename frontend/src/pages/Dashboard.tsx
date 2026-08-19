@@ -1,58 +1,83 @@
-import React from 'react';
+// pages/Dashboard.tsx
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  
+  // Get the token exactly how useAuth.ts stores it
+  const token = localStorage.getItem('access_token'); 
+  
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [name, setName] = React.useState('');
   const [description, setDescription] = React.useState('');
-  const [workspaces, setWorkspaces] = React.useState([
-    {
-      id: 1,
-      name: 'AI Research',
-      description: 'Research papers and AI documentation',
-      documents_count: 12,
-      created_at: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Project Alpha',
-      description: 'Product requirements and specs',
-      documents_count: 8,
-      created_at: '2024-01-20'
-    },
-    {
-      id: 3,
-      name: 'Personal Notes',
-      description: 'Meeting notes and ideas',
-      documents_count: 5,
-      created_at: '2024-01-25'
-    }
-  ]);
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock create workspace function (just adds to local state)
+  // Fetch workspaces from Django
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      if (!token) return;
+      
+      try {
+        const response = await fetch('http://localhost:8000/api/workspaces/', {
+          headers: {
+            'Authorization': `Bearer ${token}`, // <-- AUTH HEADER
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setWorkspaces(data); 
+        } else if (response.status === 401) {
+          // Token expired, force logout
+          localStorage.removeItem('access_token');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Failed to fetch workspaces:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWorkspaces();
+  }, [token, navigate]);
+
+  // Create workspace in Django
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token) return;
+
     try {
-      const newWorkspace = {
-        id: workspaces.length + 1,
-        name: name,
-        description: description || 'New workspace',
-        documents_count: 0,
-        created_at: new Date().toISOString().split('T')[0]
-      };
-      
-      setWorkspaces([...workspaces, newWorkspace]);
-      setShowCreateModal(false);
-      setName('');
-      setDescription('');
+      const response = await fetch('http://localhost:8000/api/workspaces/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`, // <-- AUTH HEADER
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, description })
+      });
+
+      if (response.ok) {
+        const newWorkspace = await response.json();
+        setWorkspaces([...workspaces, newWorkspace]);
+        setShowCreateModal(false);
+        setName('');
+        setDescription('');
+      }
     } catch (error) {
       console.error('Failed to create workspace:', error);
     }
   };
 
+  if (isLoading) {
+    return <div className="max-w-5xl mx-auto px-12 py-8 text-gray-500">Loading workspaces...</div>;
+  }
+
   return (
-    /* Changed px-6 to px-12 here to add more space from the left line bar */
     <div className="max-w-5xl mx-auto px-12 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
@@ -75,9 +100,9 @@ const Dashboard: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-900">{workspace.name}</h3>
               <p className="mt-1 text-sm text-gray-500">{workspace.description}</p>
               <div className="mt-4 flex items-center text-sm text-gray-500">
-                <span>{workspace.documents_count} documents</span>
+                <span>{workspace.documents_count || 0} documents</span>
                 <span className="mx-2">•</span>
-                <span>{workspace.created_at}</span>
+                <span>{workspace.created_at?.split('T')[0]}</span>
               </div>
             </div>
           </div>
