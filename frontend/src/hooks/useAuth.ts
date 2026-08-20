@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
+
 export const useAuth = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -21,6 +22,11 @@ export const useAuth = () => {
     onSuccess: () => {
       navigate('/login');
     },
+    // Temporary print statement
+    onError: (error: any) => {
+      console.error("❌ Django Registration Error:", error.response?.data);
+      console.error("❌ Status Code:", error.response?.Status);
+    }
   });
 
   const logout = () => {

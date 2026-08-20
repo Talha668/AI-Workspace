@@ -22,6 +22,7 @@ class RegisterView(generics.CreateAPIView):
             'message': 'User created successfully'
         }, status=status.HTTP_201_CREATED)
 
+    
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = (permissions.IsAuthenticated,)
