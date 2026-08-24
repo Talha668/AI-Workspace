@@ -11,21 +11,20 @@ interface DocumentUploadProps {
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({ workspaceId, onUploadComplete }) => {
   const [uploading, setUploading] = useState(false);
-  const { uploadDocument } = useDocuments(workspaceId);
+  const { uploadDocument: uploadDocumentMutation } = useDocuments(workspaceId);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setUploading(true);
     try {
       for (const file of acceptedFiles) {
-        const uploadedDoc = await uploadDocument.mutateAsync(file);
-        onUploadComplete?.(uploadedDoc);
+        await uploadDocumentMutation.mutateAsync(file);
       }
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
       setUploading(false);
     }
-  }, [uploadDocument, onUploadComplete]);
+  }, [uploadDocumentMutation, onUploadComplete]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

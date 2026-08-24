@@ -1,24 +1,36 @@
 import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { apiService } from '../../services/api'; // Adjust path if needed
 
 
 export default function ChatBar({ workspaceId }: { workspaceId: number }) {
   const [query, setQuery] = useState('');
+  // We store a local history just for this UI session
   const [messages, setMessages] = useState<Array<{role: string, text: string}>>([]);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const sendMutation = useMutation({
+    mutationFn: (content: string) => apiService.sendMessage(workspaceId, content),
+    onSuccess: (data) => {
+      // Assuming your Django sendMessage endpoint returns the AI response in 'content' 
+      // or similar. Adjust 'data.content' based on what your serializer actually returns.
+      const aiResponseText = data?.content || data?.message || "AI responded successfully.";
+      setMessages(prev => [...prev, { role: 'ai', text: aiResponseText }]);
+    },
+    onError: (error) => {
+      setMessages(prev => [...prev, { role: 'ai', text: "Error: Failed to get response from AI." }]);
+    }
+  });
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim() || sendMutation.isPending) return;
 
     const userText = query;
-    setMessages([...messages, { role: 'user', text: userText }]);
+    setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setQuery('');
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', text: "Gemini response for: " + userText }]);
-      setIsLoading(false);
-    }, 1500);
+    
+    // Trigger the real API call
+    sendMutation.mutate(userText);
   };
 
   return (
@@ -32,10 +44,10 @@ export default function ChatBar({ workspaceId }: { workspaceId: number }) {
               </div>
             </div>
           ))}
-          {isLoading && (
+          {sendMutation.isPending && (
             <div className="flex justify-start">
               <div className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm text-gray-500 animate-pulse">
-                Gemini is thinking...
+                AI is thinking...
               </div>
             </div>
           )}
@@ -49,11 +61,11 @@ export default function ChatBar({ workspaceId }: { workspaceId: number }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Ask AI about your documents..."
           className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm"
-          disabled={isLoading}
+          disabled={sendMutation.isPending}
         />
         <button 
           type="submit" 
-          disabled={isLoading || !query.trim()}
+          disabled={sendMutation.isPending || !query.trim()}
           className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

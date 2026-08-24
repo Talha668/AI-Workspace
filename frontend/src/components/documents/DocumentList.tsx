@@ -45,24 +45,23 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, onDelete }) => {
                     </p>
                   </div>
                 </div>
-                <div className="flex space-x-2">
-                  <a
-                    href={doc.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    View
-                  </a>
-                  {onDelete && (
-                    <button
-                      onClick={() => onDelete(doc.id)}
-                      className="text-sm text-red-500 hover:text-red-700"
+                  <div className="flex space-x-2">
+                    {/* Changed to trigger Django download endpoint instead of a broken direct link */}
+                    <a
+                      href={`/api/workspaces/${window.location.pathname.split('/')[2]}/documents/${doc.id}/download/`}
+                      className="text-sm text-gray-500 hover:text-gray-700"
                     >
-                      Delete
-                    </button>
-                  )}
-                </div>
+                      View
+                    </a>
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(doc.id)}
+                        className="text-sm text-red-500 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
               </div>
             </div>
           </li>
