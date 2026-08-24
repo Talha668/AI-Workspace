@@ -2,12 +2,12 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useDocuments } from '../../hooks/useDocuments';
 import type { Document } from '../../types';
-import { formatFileSize } from '../../utils/formatters';
 
 interface DocumentUploadProps {
   workspaceId: number;
   onUploadComplete?: (document: Document) => void;
 }
+
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({ workspaceId, onUploadComplete }) => {
   const [uploading, setUploading] = useState(false);
