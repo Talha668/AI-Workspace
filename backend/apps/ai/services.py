@@ -1,21 +1,24 @@
-import google as genai
+import google.generativeai as genai
 from django.conf import settings
 from typing import List, Dict
 import numpy as np
 
+# Configure the SDK once at the module level
+genai.configure(api_key=settings.GEMINI_API_KEY)
+
 
 class GeminiService:
     def __init__(self):
-        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        self.model = settings.GEMINI_MODEL
+        # configured genai module directly.
+        self.model_name = settings.GEMINI_MODEL
 
     def create_embedding(self, text: str) -> List[float]:
         """Generate embeddings for text"""
-        result = self.client.model.embed_content(
+        result = genai.embed_content(
             model='text-embedding-004',
-            contents=text
+            content=text
         )
-        return result.embeddings[0].values
+        return result['embedding']
 
     def generate_response(self, query: str, context: List[str]) -> str:
         """Generate AI response with context"""
@@ -31,10 +34,9 @@ class GeminiService:
 
         Answer:"""
         
-        response = self.client.model.generate_content(
-            model=self.model,
-            contents=prompt
-        )
+        # Correct standard SDK syntax
+        model = genai.GenerativeModel(self.model_name)
+        response = model.generate_content(prompt)
         return response.text
 
     def generate_response_stream(self, query: str, context: List[str]):
@@ -51,7 +53,8 @@ class GeminiService:
 
         Answer:"""
         
-        return self.model.generate_content(prompt, stream=True)
+        model = genai.GenerativeModel(self.model_name)
+        return model.generate_content(prompt, stream=True)
 
 
 class DocumentProcessor:
@@ -148,7 +151,7 @@ class RAGService:
         
         if not relevant_chunks:
             return {
-                'answer': "No relevant documents found in this workspace.",
+                'answer': "No relevant documents found in this workspace. Please upload and process some documents first.",
                 'sources': []
             }
         

@@ -11,9 +11,8 @@ export default function ChatBar({ conversationId }: { conversationId: number }) 
   const sendMutation = useMutation({
     mutationFn: (content: string) => apiService.sendMessage(conversationId, content),
     onSuccess: (data) => {
-      // Assuming your Django sendMessage endpoint returns the AI response in 'content' 
-      // or similar. Adjust 'data.content' based on what your serializer actually returns.
-      const aiResponseText = data?.content || data?.message || "AI responded successfully.";
+      // Return AI response
+      const aiResponseText = data?.ai_message?.content || "AI responded successfully.";
       setMessages(prev => [...prev, { role: 'ai', text: aiResponseText }]);
     },
     onError: (error) => {
