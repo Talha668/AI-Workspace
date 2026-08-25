@@ -3,13 +3,13 @@ import { useMutation } from '@tanstack/react-query';
 import { apiService } from '../../services/api'; // Adjust path if needed
 
 
-export default function ChatBar({ workspaceId }: { workspaceId: number }) {
+export default function ChatBar({ conversationId }: { conversationId: number }) {
   const [query, setQuery] = useState('');
   // We store a local history just for this UI session
   const [messages, setMessages] = useState<Array<{role: string, text: string}>>([]);
 
   const sendMutation = useMutation({
-    mutationFn: (content: string) => apiService.sendMessage(workspaceId, content),
+    mutationFn: (content: string) => apiService.sendMessage(conversationId, content),
     onSuccess: (data) => {
       // Assuming your Django sendMessage endpoint returns the AI response in 'content' 
       // or similar. Adjust 'data.content' based on what your serializer actually returns.

@@ -13,12 +13,6 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
     serializer_class = WorkspaceSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    # REMOVE THIS WHEN BUILDING LOGIN AND AUTHENTICATION
-    # def get(self, request):
-    #     workspaces = Workspace.objects.all()
-    #     serilaizer = WorkspaceSerializer(workspaces, many=True)
-    #     return Response(serilaizer.data)
-
     def get_queryset(self):
         return Workspace.objects.filter(owner=self.request.user)
 

@@ -5,8 +5,13 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'workspaces', views.WorkspaceViewSet, basename='workspace')
-router.register(r'documents', views.DocumentViewSet, basename='document')
+router.register(r'documents/', views.DocumentViewSet, basename='document')
 
 urlpatterns = [
     path('', include(router.urls)),
+
+    # Connects frontend nested URL to the DocumentViewSet
+    path('workspaces/<int:workspace_id>/documents/<int:pk>/download/',
+        views.DocumentViewSet.as_view({'get': 'download'}),
+        name='document-download-nested'),
 ]

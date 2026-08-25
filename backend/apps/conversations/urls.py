@@ -1,11 +1,35 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from . import views
 
-router = DefaultRouter()
-router.register(r'conversations', views.ConversationViewSet, basename='conversation')
-router.register(r'messages', views.MessageViewSet, basename='message')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    # 1. Conversation List & Create
+    path('conversations/', views.ConversationViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='conversation-list'),
+
+    # 2. Conversation Detail (Retrieve, Update, Delete)
+    path('conversations/<int:pk>/', views.ConversationViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'patch': 'partial_update',
+        'delete': 'destroy'
+    }), name='conversation-detail'),
+
+    # 3. THE FIX: Send Message Action
+    path('conversations/<int:pk>/send_message/', views.ConversationViewSet.as_view({
+        'post': 'send_message'
+    }), name='conversation-send-message'),
+
+    # 4. Message List
+    path('messages/', views.MessageViewSet.as_view({
+        'get': 'list',
+    }), name='message-list'),
+
+    # 5. Message Detail
+    path('messages/<int:pk>/', views.MessageViewSet.as_view({
+        'get': 'retrieve',
+        'delete': 'destroy'
+    }), name='message-detail'),
 ]
