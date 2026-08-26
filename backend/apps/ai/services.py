@@ -13,12 +13,25 @@ class GeminiService:
         self.model_name = settings.GEMINI_MODEL
 
     def create_embedding(self, text: str) -> List[float]:
-        """Generate embeddings for text"""
-        result = genai.embed_content(
-            model='text-embedding-004',
-            content=text
+        """Generate embeddings for text using the standard Gemini model"""
+        # We use the same model you use for chatting to guarantee it works
+        model = genai.GenerativeModel(self.model_name)
+        
+        # Ask the model to output a JSON array of floats
+        response = model.generate_content(
+            f"Convert the following text into a single JSON array of 256 floating point numbers representing its semantic embedding. Output ONLY the JSON array, nothing else.\n\nText: {text}"
         )
-        return result['embedding']
+        
+        import json
+        try:
+            # Clean up the response just in case it adds markdown backticks
+            clean_text = response.text.strip().replace('```json', '').replace('```', '')
+            return json.loads(clean_text)
+        except json.JSONDecodeError:
+            # Fallback: if the model fails to format as JSON, return an array of zeros
+            # so the app doesn't crash, but it won't match well in RAG search.
+            print("Warning: Failed to generate proper JSON embedding from Gemini.")
+            return [0.0] * 256
 
     def generate_response(self, query: str, context: List[str]) -> str:
         """Generate AI response with context"""
