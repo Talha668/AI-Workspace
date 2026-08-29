@@ -27,23 +27,32 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def upload_document(self, request, pk=None):
         workspace = self.get_object()
-        
+
         if 'file' not in request.FILES:
             return Response(
                 {'error': 'No file provided'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        file = request.FILES['file']
+
+        # Duplicate check: block re-uploading a file with the same name into this workspace
+        if Document.objects.filter(workspace=workspace, title=file.name).exists():
+            return Response(
+                {'error': f'"{file.name}" is already in this workspace. Delete the existing copy first if you want to replace it.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
             document = DocumentService.process_document(
-                file=request.FILES['file'],
+                file=file,
                 user=request.user,
                 workspace=workspace
             )
-            
+
             serializer = DocumentSerializer(document, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
+
         except Exception as e:
             return Response(
                 {'error': str(e)},
