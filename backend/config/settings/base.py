@@ -101,6 +101,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 
 # REST Framework
@@ -129,7 +131,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
 
 # Ai Settings
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='') 
-GEMINI_MODEL = 'gemini-1.5-flash'
+GEMINI_MODEL = 'gemini-3.6-flash'
 
 # Vector Database Dettings
 VECTOR_DIMENSIONS = 768  # gemini enbedding dimensions
