@@ -11,8 +11,8 @@ const WorkspaceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const workspaceId = parseInt(id || '0');
   const queryClient = useQueryClient();
-  
-  // State to track which con conversationsData?.results ||versation is active
+
+  // State to track which conversation is active
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
 
   // 1. Fetch workspace data
@@ -44,14 +44,14 @@ const WorkspaceDetail: React.FC = () => {
 
   // 4. Mutation to create a new conversation
   const createChatMutation = useMutation({
-    mutationFn: () => apiService.createConversation({ 
-      title: `New Chat - ${new Date().toLocaleTimeString()}`, 
-      workspace: workspaceId 
+    mutationFn: () => apiService.createConversation({
+      title: `New Chat - ${new Date().toLocaleTimeString()}`,
+      workspace: workspaceId,
     }),
     onSuccess: (data) => {
       setActiveConversationId(data.id);
       queryClient.invalidateQueries({ queryKey: ['conversations', workspaceId] });
-    }
+    },
   });
 
   // 5. Delete Document Mutation
@@ -60,27 +60,31 @@ const WorkspaceDetail: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace-documents', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
-    }
+    },
+    onError: (error: any) => {
+      console.error('Delete failed:', error.response?.status, error.response?.data);
+      alert(`Delete failed: ${error.response?.status}`);
+    },
   });
 
   if (wsLoading || docsLoading) return <div className="p-6 text-gray-500">Loading workspace...</div>;
   if (!workspace) return <div className="p-6 text-red-500">Workspace not found.</div>;
 
   return (
-    <div className="flex h-screen -m-6">
-      
+    <div className="flex h-full overflow-hidden bg-white">
+
       {/* LEFT SIDEBAR: Conversations List */}
-      <div className="w-72 bg-gray-50 border-r border-gray-200 flex flex-col">
+      <aside className="w-64 flex-shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
-          <button 
-            onClick={() => createChatMutation.mutate()} 
+          <button
+            onClick={() => createChatMutation.mutate()}
             disabled={createChatMutation.isPending}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors disabled:bg-gray-400"
           >
             + New Chat
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {convLoading ? (
             <p className="text-xs text-gray-400 p-2">Loading chats...</p>
@@ -92,8 +96,8 @@ const WorkspaceDetail: React.FC = () => {
                 key={conv.id}
                 onClick={() => setActiveConversationId(conv.id)}
                 className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors truncate ${
-                  activeConversationId === conv.id 
-                    ? 'bg-blue-100 text-blue-700 font-medium' 
+                  activeConversationId === conv.id
+                    ? 'bg-blue-100 text-blue-700 font-medium'
                     : 'text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -102,11 +106,11 @@ const WorkspaceDetail: React.FC = () => {
             ))
           )}
         </div>
-      </div>
+      </aside>
 
       {/* RIGHT MAIN AREA: Documents & Chat */}
-      <div className="flex-1 flex flex-col bg-white">
-        
+      <main className="flex-1 flex flex-col min-w-0 bg-white">
+
         {/* Top Section: Workspace Info & Documents */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mb-6">
@@ -132,8 +136,7 @@ const WorkspaceDetail: React.FC = () => {
             <p>Select an existing chat or click "+ New Chat" to start asking questions about your documents.</p>
           </div>
         )}
-
-      </div>
+      </main>
     </div>
   );
 };

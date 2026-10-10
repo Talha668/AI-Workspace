@@ -5,7 +5,7 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'workspaces', views.WorkspaceViewSet, basename='workspace')
-router.register(r'documents/', views.DocumentViewSet, basename='document')
+router.register(r'documents', views.DocumentViewSet, basename='document')
 
 urlpatterns = [
     path('', include(router.urls)),

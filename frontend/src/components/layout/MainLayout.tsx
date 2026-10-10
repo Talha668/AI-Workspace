@@ -59,12 +59,6 @@ const MainLayout: React.FC = () => {
             <Bars3Icon className="h-6 w-6" />
           </button>
         </div>
-        {/* Add bg-gray-50 here */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
-          <div className="py-6">
-            <Outlet />
-          </div>
-        </main>
       </div>
     </div>
   );

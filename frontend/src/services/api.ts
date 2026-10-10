@@ -148,7 +148,7 @@ class ApiService {
     return response.data;
   }
 
-  async queryAI(data: {quer: string; workspace_id: number }) {
+  async queryAI(data: {query: string; workspace_id: number }) {
     const response = await this.api.post('/ai/query/', data);
     return response.data;
   }
