@@ -14,7 +14,7 @@ const MainLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   //const logout = () => console.log("Auth is disabled for now")
   const { logout } = useAuth();
-  
+
   // Added this dummy so the buttons don't break
   const navigate = useNavigate();
 
@@ -59,6 +59,11 @@ const MainLayout: React.FC = () => {
             <Bars3Icon className="h-6 w-6" />
           </button>
         </div>
+
+        {/* This is where every page renders */}
+        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
