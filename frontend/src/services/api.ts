@@ -135,6 +135,16 @@ class ApiService {
     return response.data;
   }
 
+  async updateConversation(id: number, data: { title?: string }) {
+    const response = await this.api.patch(`/conversations/${id}/`, data);
+    return response.data;
+  }
+
+  async deleteConversation(id: number) {
+    const response = await this.api.delete(`/conversations/${id}/`);
+    return response.data;
+  }
+
   async getConversation(id: number) {
     const response = await this.api.get(`/conversations/${id}/`);
     return response.data;

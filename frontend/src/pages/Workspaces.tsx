@@ -2,23 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
-
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 const Workspaces: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [newWorkspace, setNewWorkspace] = useState({ name: '', description: '' });
 
-  // 1. Fetch real workspaces
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['workspaces'],
     queryFn: () => apiService.getWorkspaces(),
   });
 
-  // Extract the array from Django's pagination object
-  const workspaces = data?.results || [];
+  const workspaces = data?.results || data || [];
 
-  // 2. Create mutation
   const createMutation = useMutation({
     mutationFn: (data: { name: string; description: string }) => apiService.createWorkspace(data),
     onSuccess: () => {
@@ -26,9 +23,9 @@ const Workspaces: React.FC = () => {
       setNewWorkspace({ name: '', description: '' });
     },
     onError: (error: any) => {
-      console.error("🔥 Workspace Create Error:", error.response?.data);
-      alert("Failed to create workspace. Are you logged in?");
-    }
+      console.error('Workspace create error:', error.response?.data);
+      alert('Failed to create workspace. Are you logged in?');
+    },
   });
 
   const handleCreate = (e: React.FormEvent) => {
@@ -36,63 +33,89 @@ const Workspaces: React.FC = () => {
     createMutation.mutate(newWorkspace);
   };
 
-  // Loading state
-  if (isLoading) return <div className="max-w-5xl mx-auto px-6 py-8 text-center text-gray-500">Loading workspaces...</div>;
-  
-  // Error state (Usually means user is not logged in / 401 Unauthorized)
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="h-8 w-56 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
+        <div className="mt-8 h-64 animate-pulse rounded-xl bg-white shadow-sm dark:bg-slate-900" />
+      </div>
+    );
+  }
+
   if (isError) {
     return (
-      <div className="max-w-5xl mx-auto px-6 py-8 text-center">
-        <p className="text-red-500 mb-4">Failed to load workspaces. Make sure you are logged in.</p>
-        <p className="text-sm text-gray-400">Error: {(error as any)?.response?.data?.detail || 'Unknown error'}</p>
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+          Failed to load workspaces. Make sure you are logged in.
+        </div>
+        <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
+          Error: {(error as any)?.response?.data?.detail || 'Unknown error'}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">All Workspaces</h1>
-        <button 
+    <div className="mx-auto max-w-5xl px-6 py-8">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">All Workspaces</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {workspaces.length} workspace{workspaces.length === 1 ? '' : 's'}
+          </p>
+        </div>
+        <button
           onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500"
         >
+          <PlusIcon className="h-4 w-4" />
           New Workspace
         </button>
       </div>
 
-      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <form onSubmit={handleCreate} className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Create New Workspace</h2>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input
-                type="text"
-                required
-                className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g. AI Research"
-                value={newWorkspace.name}
-                onChange={(e) => setNewWorkspace({ ...newWorkspace, name: e.target.value })}
-              />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+          <form
+            onSubmit={handleCreate}
+            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900"
+          >
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Create New Workspace</h2>
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. AI Research"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  value={newWorkspace.name}
+                  onChange={(e) => setNewWorkspace({ ...newWorkspace, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+                <textarea
+                  rows={3}
+                  placeholder="What is this workspace for?"
+                  className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  value={newWorkspace.description}
+                  onChange={(e) => setNewWorkspace({ ...newWorkspace, description: e.target.value })}
+                />
+              </div>
             </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea
-                className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                rows={3}
-                placeholder="What is this workspace for?"
-                value={newWorkspace.description}
-                onChange={(e) => setNewWorkspace({ ...newWorkspace, description: e.target.value })}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 mt-6">
-              <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed">
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={createMutation.isPending}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {createMutation.isPending ? 'Creating...' : 'Create'}
               </button>
             </div>
@@ -100,42 +123,42 @@ const Workspaces: React.FC = () => {
         </div>
       )}
 
-      {/* Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {workspaces.length === 0 ? (
-          <div className="px-6 py-12 text-center text-gray-500">
+          <div className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
             No workspaces yet. Click "New Workspace" to get started!
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-slate-200/70 dark:divide-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-800/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-3"></th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Documents</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Created</th>
+                <th className="px-6 py-3" />
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800">
               {workspaces.map((ws: any) => (
-                <tr 
-                  key={ws.id} 
+                <tr
+                  key={ws.id}
                   onClick={() => navigate(`/workspaces/${ws.id}`)}
-                  className="hover:bg-gray-50 cursor-pointer"
+                  className="group cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-blue-600">{ws.name}</div>
-                    <div className="text-sm text-gray-500">{ws.description || 'No description'}</div>
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{ws.name}</div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">{ws.description || 'No description'}</div>
                   </td>
-                  {/* Safely check if documents_count exists, fallback to 0 */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                     {ws.documents_count ?? 0}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                     {new Date(ws.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <span className="text-blue-600 hover:text-blue-900">Open</span>
+                  <td className="whitespace-nowrap px-6 py-4 text-right">
+                    <span className="text-sm font-medium text-indigo-600 transition-colors group-hover:text-indigo-500 dark:text-indigo-400">
+                      Open
+                    </span>
                   </td>
                 </tr>
               ))}

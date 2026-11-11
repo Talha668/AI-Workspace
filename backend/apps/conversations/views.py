@@ -13,9 +13,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Conversation.objects.filter(
-            created_by=self.request.user
-        )
+        qs = Conversation.objects.filter(created_by=self.request.user)
+        workspace_id = self.request.query_params.get('workspace')
+        if workspace_id:
+            qs = qs.filter(workspace_id=workspace_id)
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -36,6 +38,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
                 conversation=conversation,
                 message_type='user'
             )
+
+            # Auto title: the first user message names the chat
+            if conversation.title in ('', None, 'New Chat'):
+                conversation.title = message.content.strip()[:60] or 'New Chat'
+                conversation.save(update_fields=['title'])
             
             # Get AI reponse using RAG
             try:
@@ -79,6 +86,8 @@ class MessageViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Message.objects.filter(
-            conversation__created_by=self.request.user
-        )
+        qs = Message.objects.filter(conversation__created_by=self.request.user)
+        conversation_id = self.request.query_params.get('conversation')
+        if conversation_id:
+            qs = qs.filter(conversation_id=conversation_id)
+        return qs    
