@@ -1,73 +1,78 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useDocuments } from '../../hooks/useDocuments';
-import type { Document } from '../../types';
-import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { useQueryClient } from '@tanstack/react-query';
+import { apiService } from '../../services/api';
 
 interface DocumentUploadProps {
-  workspaceId: number;
-  onUploadComplete?: (document: Document) => void;
+  workspaceId: number | string;
 }
 
-const DocumentUpload: React.FC<DocumentUploadProps> = ({ workspaceId, onUploadComplete }) => {
+export default function DocumentUpload({ workspaceId }: DocumentUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const { uploadDocument: uploadDocumentMutation } = useDocuments(workspaceId);
+  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
+      if (!acceptedFiles.length) return;
+      setError(null);
       setUploading(true);
       try {
         for (const file of acceptedFiles) {
-          await uploadDocumentMutation.mutateAsync(file);
+          await apiService.uploadDocument(Number(workspaceId), file);
         }
-      } catch (error) {
-        console.error('Upload failed:', error);
+        queryClient.invalidateQueries(); // refresh documents list + counts everywhere
+      } catch (err: any) {
+        const detail = err?.response?.data;
+        setError(
+          typeof detail === 'string'
+            ? detail
+            : detail
+              ? Object.entries(detail)
+                  .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
+                  .join(' · ')
+              : 'Upload failed. Please try again.'
+        );
       } finally {
         setUploading(false);
       }
     },
-    [uploadDocumentMutation, onUploadComplete]
+    [workspaceId, queryClient]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    multiple: true,
+    maxSize: 50 * 1024 * 1024,
     accept: {
       'application/pdf': ['.pdf'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'text/plain': ['.txt'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
     },
-    maxSize: 52428800,
   });
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="border-b border-slate-200/70 px-4 py-3 dark:border-slate-800">
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Upload Documents</h2>
-      </div>
-
-      <div className="p-4">
-        <div
-          {...getRootProps()}
-          className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors
-            ${
-              isDragActive
-                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/50 dark:hover:border-indigo-500/50 dark:hover:bg-slate-800/50'
-            }
-            ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-        >
-          <input {...getInputProps()} disabled={uploading} />
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10">
-            <ArrowUpTrayIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-200">
-            {uploading ? 'Uploading...' : isDragActive ? 'Drop the files here' : 'Drag and drop files here, or click to select'}
-          </p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">PDF, DOCX or TXT · up to 50MB</p>
+    <div className="rounded-2xl bg-slate-900 p-6 shadow-xl ring-1 ring-white/10">
+      <h3 className="text-lg font-semibold text-white">Upload Documents</h3>
+      <div
+        {...getRootProps()}
+        className={`mt-4 cursor-pointer rounded-xl border-2 border-dashed px-4 py-10 text-center transition ${
+          isDragActive ? 'border-indigo-400 bg-indigo-500/10' : 'border-slate-600 hover:border-indigo-400/60'
+        }`}
+      >
+        <input {...getInputProps()} />
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-600/20">
+          <svg className="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0-12l-4 4m4-4l4 4" />
+          </svg>
         </div>
+        <p className="mt-4 text-sm font-medium text-white">
+          {uploading ? 'Uploading…' : 'Drag and drop files here, or click to select'}
+        </p>
+        <p className="mt-1 text-xs text-slate-400">PDF, DOCX or TXT · up to 50MB</p>
       </div>
+      {error && <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{error}</p>}
     </div>
   );
-};
-
-export default DocumentUpload;
+}

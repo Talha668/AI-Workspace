@@ -102,6 +102,11 @@ class ApiService {
     return response.data;
   }
 
+  async updateWorkspce(id: number, data: { name?: string; description?: string}) {
+    const response = await this.api.patch(`/workspaces/${id}/`, data);
+    return response.data;
+  }
+
   // Document endpoints
   async uploadDocument(workspaceId: number, file: File) {
     const formData = new FormData();
@@ -122,6 +127,30 @@ class ApiService {
   async deleteDocument(documentId: number) {
     const response = await this.api.delete(`/documents/${documentId}/`);
     return response.data;
+  }
+
+    async viewDocument(documentId: number) {
+    // Open the placeholder tab synchronously (before any await) so popup blockers allow it
+    const tab = window.open('', '_blank');
+    try {
+      const response = await this.api.get(`/documents/${documentId}/download/`, {
+        responseType: 'blob',
+      });
+      const contentType = (response.headers['content-type'] as string) || 'application/octet-stream';
+      const blob = new Blob([response.data], { type: contentType });
+      const url = URL.createObjectURL(blob);
+
+      if (tab) {
+        tab.location.href = url;
+      } else {
+        window.location.href = url; // fallback if the tab was blocked
+      }
+      // Give the tab time to load before releasing the blob
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (error) {
+      tab?.close();
+      alert('Could not open the document. Please try again.');
+    }
   }
 
   // Conversation endpoints

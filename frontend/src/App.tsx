@@ -8,6 +8,7 @@ import Conversations from './pages/Conversations';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { useAuth } from './hooks/useAuth';
+import ConversationPage from './pages/Conversations';
 
 
 const queryClient = new QueryClient({
@@ -51,6 +52,7 @@ function App() {
             <Route path="workspaces" element={<Workspaces />} />
             <Route path="workspaces/:id" element={<WorkspaceDetail />} />
             <Route path="conversations" element={<Conversations />} />
+            <Route path="conversations/:conversationId" element={<ConversationPage />} />
           </Route>
           
           {/* Catch all */}

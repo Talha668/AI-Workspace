@@ -69,13 +69,14 @@ export default function WorkSpaceDetail() {
     setShowEdit(true);
   };
 
-  const handleUpdate = (e: FormEvent) => {
+  const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!workspace || !name.trim()) return;
+    if (!workspaceId) return;
     setSaving(true);
-    apiService.updateWorkspace(workspaceId, { name: name.trim(), description: description.trim() })
-      .then(() => {
-        queryClient.invalidateQueries();
+    apiService.updateWorkspace(workspaceId, { name, description })
+      .then((res) => {
+        queryClient.setQueryData(['workspace', workspaceId], res.data);
+        queryClient.invalidateQueries({ queryKey: ['workspaces'] });
         setShowEdit(false);
       })
       .catch(() => alert('Could not update the workspace. Please try again.'))

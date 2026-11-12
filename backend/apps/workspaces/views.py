@@ -7,6 +7,10 @@ from .serializers import (
     DocumentSerializer
 )
 from .services import DocumentService
+import mimetypes
+import os
+from django.http import FileResponse
+
 
 
 class WorkspaceViewSet(viewsets.ModelViewSet):
@@ -78,7 +82,19 @@ class DocumentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def download(self, request, pk=None):
+        """Stream the upload file for inline viewing (PDF/TXT) or download (Docs)"""
         document = self.get_object()
-        response = Response(document.file)
-        response['Content-Disposition'] = f'attachment; filename="{document.title}"'
+        file_field = getattr(document, 'file', None)
+        if not file_field:
+            return Response({'error': 'This document has no file.'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            file_handle = file_field.open('rb')
+        except (FileNotFoundError, ValueError):
+            return Response({'error': 'File is missing on the disk.'}, status=status.HTTP_404_NOT_FOUND)
+
+        filename = os.path.basename(file_field.name)
+        content_type = mimetypes.guess_type(file_field.name)[0] or 'application/octet-stream'
+
+        response = FileResponse(file_handle, content_type=content_type)
+        response['Content-Disposition'] = f'inline; filename="{filename.replace(chr(34), "")}"'
         return response
