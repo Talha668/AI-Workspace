@@ -8,7 +8,7 @@ import Conversations from './pages/Conversations';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { useAuth } from './hooks/useAuth';
-import ConversationPage from './pages/Conversations';
+import ConversationPage from './pages/ConversationPage';
 
 
 const queryClient = new QueryClient({

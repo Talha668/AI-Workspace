@@ -1,6 +1,10 @@
+import logging
 from celery import shared_task
 from .services import DocumentProcessor
 from apps.workspaces.models import Document
+
+logger = logging.getLogger(__name__)
+
 
 
 @shared_task
@@ -19,6 +23,7 @@ def process_document_async(document_id):
     except Document.DoesNotExist:
         return {'status': 'error', 'message': 'Document not found'}
     except Exception as e:
+        logger.exception('Embedding failed for document %s', document_id)
         return {'status': 'error', 'message': str(e)}
 
 

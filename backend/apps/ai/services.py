@@ -24,13 +24,16 @@ class GeminiService:
         return result["embedding"]
 
     def create_embeddings_batch(self, texts: List[str]) -> List[List[float]]:
-        """Embed many chunks in ONE API call (much faster uploads)."""
-        result = genai.embed_content(
-            model=EMBEDDING_MODEL,
-            content=texts,
-            task_type="retrieval_document",
-        )
-        return result["embedding"]
+        """Embed chunks. The deprecated SDK takes ONE string per call, so we loop."""
+        vectors = []
+        for text in texts:
+            result = genai.embed_content(
+                model=EMBEDDING_MODEL,
+                content=text,
+                task_type="retrieval_document",
+            )
+            vectors.append(result["embedding"])
+        return vectors
 
     def generate_response(self, query: str, context: List[str]) -> str:
         """Generate AI response with context"""
@@ -99,7 +102,6 @@ class DocumentProcessor:
             return []
 
         # ONE API call for all chunks
-        vector_input = list(dict.fromkeys(chunks))      # Preserve order, removes exact duplicates
         vectors = self.gemini.create_embeddings_batch(vector_input)
 
         embeddings = []
@@ -136,6 +138,8 @@ class RAGService:
         similarities = []
         for chunk in chunks:
             chunk_embedding = np.array(chunk.embedding)
+            if chunk_embedding.shape != query_embedding.shape:
+                continue
             q_norm = np.linalg.norm(query_embedding)
             c_norm = np.linalg.norm(chunk_embedding)
             if q_norm == 0 or c_norm == 0:
