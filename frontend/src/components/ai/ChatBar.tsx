@@ -7,8 +7,8 @@ export default function ChatBar({ conversationId }: { conversationId: number }) 
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<Array<{ role: string; text: string }>>([]);
 
-  // Auto-scroll anchor
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Scroll container ref
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const sendMutation = useMutation({
     mutationFn: (content: string) => apiService.sendMessage(conversationId, content),
@@ -21,10 +21,10 @@ export default function ChatBar({ conversationId }: { conversationId: number }) 
     },
   });
 
-  // Scrolls the panel to the latest message whenever anything changes
-  // (new message sent, AI response arrives, "thinking..." indicator appears)
+  // Scrolls the container directly to the bottom whenever messages or pending state changes
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages, sendMutation.isPending]);
 
   const handleSend = (e: React.FormEvent) => {
@@ -38,9 +38,14 @@ export default function ChatBar({ conversationId }: { conversationId: number }) 
   };
 
   return (
-    <div className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-      {messages.length > 0 && (
-        <div className="max-h-48 space-y-3 overflow-y-auto border-b border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+    // 1. Outermost full-height container
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-white dark:bg-slate-900">
+      
+      {/* Optional: If you want a header inside this component, put it right here */}
+
+      {/* 2. Messages — the ONLY scrollable region */}
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto bg-slate-50 dark:bg-slate-950/60">
+        <div className="mx-auto max-w-3xl space-y-4 px-4 py-6">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
@@ -54,6 +59,7 @@ export default function ChatBar({ conversationId }: { conversationId: number }) 
               </div>
             </div>
           ))}
+
           {sendMutation.isPending && (
             <div className="flex justify-start">
               <div className="animate-pulse rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
@@ -61,28 +67,29 @@ export default function ChatBar({ conversationId }: { conversationId: number }) 
               </div>
             </div>
           )}
-          {/* invisible anchor — this is what auto-scrolls */}
-          <div ref={messagesEndRef} />
         </div>
-      )}
+      </div>
 
-      <form onSubmit={handleSend} className="flex items-center gap-3 p-4">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask AI about your documents..."
-          className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          disabled={sendMutation.isPending}
-        />
-        <button
-          type="submit"
-          disabled={sendMutation.isPending || !query.trim()}
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm transition-colors hover:bg-indigo-500 disabled:opacity-50"
-        >
-          <PaperAirplaneIcon className="h-5 w-5" />
-        </button>
-      </form>
+      {/* 3. Composer — pinned to the bottom */}
+      <div className="shrink-0 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60">
+        <form onSubmit={handleSend} className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ask AI about your documents..."
+            className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            disabled={sendMutation.isPending}
+          />
+          <button
+            type="submit"
+            disabled={sendMutation.isPending || !query.trim()}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm transition-colors hover:bg-indigo-500 disabled:opacity-50"
+          >
+            <PaperAirplaneIcon className="h-5 w-5" />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import axios, { type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance } from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -102,7 +103,7 @@ class ApiService {
     return response.data;
   }
 
-  async updateWorkspce(id: number, data: { name?: string; description?: string}) {
+  async updateWorkspace(id: number, data: { name?: string; description?: string}) {
     const response = await this.api.patch(`/workspaces/${id}/`, data);
     return response.data;
   }

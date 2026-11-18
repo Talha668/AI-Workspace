@@ -38,42 +38,50 @@ class GeminiService:
     def generate_response(self, query: str, context: List[str]) -> str:
         """Generate AI response with context"""
         context_text = "\n\n".join(context)
-        prompt = f"""You are a helpful AI assistant. Use the following context to answer the question.
+        prompt = f"""You are a friendly, knowledgeable assistant chatting with a user inside their document workspace.
 
-Rules:        
-- If the question can be answered from the text below, use it and cite what you used.
-- If the question is general or conversational (greetings, "what can you do?", etc), just answer normally.
-- Only if the question is clearly about the documents AND the answer isn't in them, say "I cannot find this information in the documents."
-
-Context:
+Excerpts from the user's documents:
 {context_text}
 
-Question: {query}
+User's question: {query}
+
+How to answer:
+- Answer the question that was actually asked. Get to the point in your first sentence.
+- Write in a natural, conversational tone — like a smart colleague explaining over chat. Never start with "Based on the provided document..." or any meta-phrase like that.
+- When the context helped you, mention the document naturally (e.g. "the migration guide recommends...").
+- Light markdown is welcome (**bold** for key terms, short bullet lists), but prefer plain sentences over big dumps. Keep answers 2–6 sentences unless the question genuinely needs a walkthrough.
+- If the question is small talk or about you, just chat normally.
+- Only if the question is clearly about the uploaded documents AND the answer truly isn't in them, say you couldn't find it in the documents.
 
 Answer:"""
         model = genai.GenerativeModel(self.model_name)
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt, generation_config={'temperature': 0.7})
         return response.text
 
     def generate_response_stream(self, query: str, context: List[str]):
         """Stream AI response"""
         context_text = "\n\n".join(context)
-        prompt = f"""You are a helpful AI assistant where user has uploaded documents.
+        prompt = f"""You are a friendly, knowledgeable assistant chatting with a user inside their document workspace.
 
-Rules:
-- If the question can be answered from the text below, use it and cite what you used.
-- If the question is general or conversational (greetings, "what can you do?", etc), just answer normally.
-- Only if the question is clearly about the documents AND the answer isn't in them, say "I cannot find this information in the documents."
-
-Context:
+Excerpts from the user's documents:
 {context_text}
 
-Question: {query}
+User's question: {query}
+
+How to answer:
+- Answer the question that was actually asked. Get to the point in your first sentence.
+- Write in a natural, conversational tone — like a smart colleague explaining over chat. Never start with "Based on the provided document..." or any meta-phrase like that.
+- When the context helped you, mention the document naturally (e.g. "the migration guide recommends...").
+- Light markdown is welcome (**bold** for key terms, short bullet lists), but prefer plain sentences over big dumps. Keep answers 2–6 sentences unless the question genuinely needs a walkthrough.
+- If the question is small talk or about you, just chat normally.
+- Only if the question is clearly about the uploaded documents AND the answer truly isn't in them, say you couldn't find it in the documents.
 
 Answer:"""
         model = genai.GenerativeModel(self.model_name)
-        return model.generate_content(prompt, stream=True)
-
+        response = model.generate_content(prompt, generation_config={'temperature': 0.7}, stream=True)
+        for part in response:
+            if part.text:
+                yield part.text
 
 class DocumentProcessor:
     def __init__(self):
@@ -102,7 +110,7 @@ class DocumentProcessor:
             return []
 
         # ONE API call for all chunks
-        vectors = self.gemini.create_embeddings_batch(vector_input)
+        vectors = self.gemini.create_embeddings_batch(chunks)
 
         embeddings = []
         for idx, (chunk, vector) in enumerate(zip(chunks, vectors)):
@@ -188,21 +196,16 @@ class RAGService:
         relevant_chunks = self.search_similar_chunks(query, workspace_id)
 
         if not relevant_chunks:
-            for part in self.gemini.generate_response_stream(query, []):
-                yield {'text': part.text, 'sources': []}
+            for text in self.gemini.generate_response_stream(query, []):
+                yield {'text': text, 'sources': []}
             return
 
         context = [chunk['text'] for chunk in relevant_chunks]
-        stream = self.gemini.generate_response_stream(query, context)
-
-        for chunk in stream:
+        for text in self.gemini.generate_response_stream(query, context):
             yield {
-                'text': chunk.text,
+                'text': text,
                 'sources': [
-                    {
-                        'document_title': c['document_title'],
-                        'excerpt': c['text'][:200] + '...'
-                    }
+                    {'document_title': c['document_title'], 'excerpt': c['text'][:200] + '...'}
                     for c in relevant_chunks
                 ]
             }

@@ -1,13 +1,11 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 
 interface Conversation {
   id: number;
   title: string;
   created_at: string;
-  workspace?: number;
-  last_message?: { text: string; role: string; created_at: string } | null;
 }
 
 function formatRelativeTime(iso?: string) {
@@ -24,31 +22,54 @@ function formatRelativeTime(iso?: string) {
 
 export default function Conversations() {
   const navigate = useNavigate();
-  const { data: conversations = [], isLoading } = useQuery({
-    queryKey: ['conversations'],
-    queryFn: async () => {
-      const res: any = await apiService.getConversations();
-      return Array.isArray(res) ? res : res.data;
-    },
-  });
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const lastActivity = (c: Conversation) =>
-    new Date(c.last_message?.created_at ?? c.created_at ?? 0).getTime() || 0;
-  const sorted = [...conversations].sort((a, b) => lastActivity(b) - lastActivity(a));
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res: any = await apiService.getConversations();
+        const list = Array.isArray(res) ? res : (res?.data ?? res?.results ?? []);
+        if (!cancelled) setConversations(list);
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || 'Failed to load conversations');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const sorted = [...conversations].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
       <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Conversations</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        {sorted.length} conversations across all workspaces
+        {loading ? 'Loading…' : `${sorted.length} conversations across all workspaces`}
       </p>
 
-      {isLoading ? (
-        <p className="mt-10 text-center text-slate-500 dark:text-slate-400">Loading…</p>
+      {loading ? (
+        <p className="mt-10 text-center text-slate-500 dark:text-slate-400">Loading conversations…</p>
+      ) : error ? (
+        <div className="mt-10 rounded-xl border border-red-300 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-900/20">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="mt-2 text-xs text-red-400 dark:text-red-500">
+            If this says 404, your apiService has no getConversations() method — paste your
+            services/api.ts and the list endpoint will be wired to the right URL.
+          </p>
+        </div>
       ) : sorted.length === 0 ? (
         <div className="mt-10 rounded-xl border-2 border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
           <p className="text-slate-500 dark:text-slate-400">
-            No conversations yet. Open a workspace and click "+ New Chat" to start asking questions about your documents.
+            No conversations yet. Open a workspace and click "+ New Chat" to start asking questions
+            about your documents.
           </p>
         </div>
       ) : (
@@ -61,8 +82,12 @@ export default function Conversations() {
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600/10">
                 <svg className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 21l1.9-3.6A7.92 7.92 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 21l1.9-3.6A7.92 7.92 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
@@ -70,14 +95,10 @@ export default function Conversations() {
                   {c.title || 'Untitled chat'}
                 </p>
                 <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                  {c.last_message
-                    ? `${c.last_message.role === 'user' ? 'You' : 'AI'}: ${c.last_message.text}`
-                    : 'No messages yet'}
+                  Created {formatRelativeTime(c.created_at)}
                 </p>
               </div>
-              <span className="shrink-0 text-xs text-slate-400">
-                {formatRelativeTime(c.last_message?.created_at ?? c.created_at)}
-              </span>
+              <span className="shrink-0 text-xs text-slate-400">{formatRelativeTime(c.created_at)}</span>
             </button>
           ))}
         </div>
